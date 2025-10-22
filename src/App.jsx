@@ -1,16 +1,18 @@
-import { useState, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import Todo from './components/Todo.jsx'
 
 function App() {
 
   const [text, setText] = useState("")
-  const [todos, setTodos] = useState([])
+  const [todos, setTodos] = useState(() => {
+    const saved = localStorage.getItem("todos")
+    return saved ? JSON.parse(saved) : []
+  })
 
-  // this function is used in the funtions: 
-  function saveToLocalStorage() {
+  useEffect(() => {
     localStorage.setItem("todos", JSON.stringify(todos))
-  }
+  }, [todos])
 
   function handleText(e) {
     setText(e.target.value)
@@ -21,28 +23,22 @@ function App() {
       setTodos(prev => [...prev, { text: text, isDone: false }])
     console.log(todos);
     setText("")
-    saveToLocalStorage()
   }
 
   function handleCheck(idx) {
     setTodos(todos.map((todo, i) =>
       i === idx ? { ...todo, isDone: !todo.isDone } : todo
     ))
-    saveToLocalStorage()
   }
 
   function handleDelete(idx) {
     setTodos(prev => prev.filter((_, i) => i !== idx));
-    saveToLocalStorage()
   }
 
   function handleEdit(idx) {
-    let tempTodos = [...todos];
-    for (let i = 0; i < tempTodos.length; i++)
-      if (i === idx)
-        setText(tempTodos[i].text)
-    setTodos(prev => prev.filter((_, i) => i !== idx));
-    saveToLocalStorage()
+    const todo = todos[idx]
+    setText(todo.text)
+    setTodos(prev => prev.filter((_, i) => i !== idx))
   }
 
   return (
